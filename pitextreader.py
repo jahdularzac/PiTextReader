@@ -112,13 +112,7 @@ def cleanText():
 def playTTS():
     logger.info('playTTS()') 
     global current_tts
-    #current_tts=subprocess.Popen(['/usr/bin/flite','-voice','awb','-f', '/tmp/text.txt'],
-    #current_tts=subprocess.Popen(['/usr/bin/pico2wave','-l','fr-FR','-w','/tmp/text.wav',"(Salut les amis. Ceci est un test pour pico.)"],
-    #current_tts=subprocess.Popen(['/usr/bin/pico2wave','-l','fr-FR','-w','/tmp/text.wav', "(cat /tmp/text.txt)"],
-    #current_tts=subprocess.Popen(['/usr/bin/espeak','-f','text.txt'],
-    #current_tts=subprocess.Popen(['pico2wave','-l','fr-FR','-w','/tmp/text2.wav','-<', '/tmp/text.txt', 'shell=True'],
-    #current_tts=subprocess.Popen(['/usr/bin/pico2wave','-l','fr-FR','-w','text.wav',"$(cat /tmp/text.txt)",'aplay text.wav'],
-    #current_tts=subprocess.Popen(['-cmd', 'WAV', 'shell=True'],    
+    #current_tts=subprocess.Popen(['/usr/bin/flite','-voice','awb','-f', '/tmp/text.txt'],  
     current_tts=subprocess.Popen(['sh', '/home/pi/PiTextReader/txtpico.sh'],  
         stdin=subprocess.PIPE,stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,close_fds=True)
