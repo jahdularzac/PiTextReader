@@ -1,6 +1,4 @@
 #!/bin/sh
-#tr "\n" " " < /tmp/text.txt > /tmp/text1line.txt
-#paste -s -d ' ' /tmp/text.txt
 
 tr "\n" " " < /tmp/text.txt > /tmp/text1line.txt
 pico2wave -l fr-FR -w /tmp/text.wav < /tmp/text1line.txt
