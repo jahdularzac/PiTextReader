@@ -29,6 +29,7 @@ import threading
 import time 
 
 
+
 ##### USER VARIABLES
 DEBUG   = 0 # Debug 0/1 off/on (writes to debug.log)
 SPEED   = 1.0   # Speech speed, 0.5 - 2.0 
@@ -36,7 +37,8 @@ VOLUME  = 90    # Audio volume
 
 # OTHER SETTINGS
 SOUNDS  = "/home/pi/PiTextReader/sounds/" # Directory for sound effect(s)
-CAMERA  = "raspistill -cfx 128:128 --awb auto -rot 180 -t 500 -o /tmp/image.jpg"
+CAMERA  = "/usr/bin/raspistill -cfx 128:128 -awb auto -t 500 -o /tmp/image.jpg"
+VOICE = "/home/pi/PiTextReader/"
 
 # GPIO BUTTONS
 BTN1    = 24    # The button!
@@ -82,7 +84,9 @@ def sound(val): # Play a sound
 # SPEAK STATUS
 def speak(val): # TTS Speak
     logger.info('speak()') 
-    cmd = "/usr/bin/flite -voice awb --setf duration_stretch="+str(SPEED)+" -t \""+str(val)+"\""
+    #cmd = "/usr/bin/flite -voice awb --setf duration_stretch="+str(SPEED)+" -t \""+str(val)+"\""
+    cmd = "/usr/bin/aplay -q "+str(val)
+    #cmd = "/usr/bin/espeak -a 50 -v mb-fr4 -s180" 
     logger.info(cmd) 
     os.system(cmd)
     return 
@@ -91,7 +95,7 @@ def speak(val): # TTS Speak
 def volume(val): # Set Volume for Launch
     logger.info('volume('+str(val)+')') 
     vol = int(val)
-    cmd = "sudo amixer -q sset PCM,0 "+str(vol)+"%"
+    cmd = "sudo /usr/bin/amixer -q sset 'Master' "+str(vol)+"%"
     logger.info(cmd) 
     os.system(cmd)
     return 
@@ -99,7 +103,7 @@ def volume(val): # Set Volume for Launch
 # TEXT CLEANUP
 def cleanText():
     logger.info('cleanText()')
-    cmd = "sed -e 's/\([0-9]\)/& /g' -e 's/[[:punct:]]/ /g' -e 'G' -i /tmp/text.txt"
+    cmd = "sed -i -e 's/</./g' -e 's/>/./g' -e 's/|/l/g' -e 's/*/./g' -e 's/-//g' -e 'G' /tmp/text.txt"
     logger.info(cmd) 
     os.system(cmd)
     return
@@ -108,7 +112,14 @@ def cleanText():
 def playTTS():
     logger.info('playTTS()') 
     global current_tts
-    current_tts=subprocess.Popen(['/usr/bin/flite','-voice','awb','-f', '/tmp/text.txt'],
+    #current_tts=subprocess.Popen(['/usr/bin/flite','-voice','awb','-f', '/tmp/text.txt'],
+    #current_tts=subprocess.Popen(['/usr/bin/pico2wave','-l','fr-FR','-w','/tmp/text.wav',"(Salut les amis. Ceci est un test pour pico.)"],
+    #current_tts=subprocess.Popen(['/usr/bin/pico2wave','-l','fr-FR','-w','/tmp/text.wav', "(cat /tmp/text.txt)"],
+    #current_tts=subprocess.Popen(['/usr/bin/espeak','-f','text.txt'],
+    #current_tts=subprocess.Popen(['pico2wave','-l','fr-FR','-w','/tmp/text2.wav','-<', '/tmp/text.txt', 'shell=True'],
+    #current_tts=subprocess.Popen(['/usr/bin/pico2wave','-l','fr-FR','-w','text.wav',"$(cat /tmp/text.txt)",'aplay text.wav'],
+    #current_tts=subprocess.Popen(['-cmd', 'WAV', 'shell=True'],    
+    current_tts=subprocess.Popen(['sh', '/home/pi/PiTextReader/txtpico.sh'],  
         stdin=subprocess.PIPE,stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,close_fds=True)
     # Kick off stop audio thread 
@@ -141,8 +152,8 @@ def getData():
     os.system(cmd)
 
     # OCR to text
-    speak("now working. please wait.")
-    cmd = "/usr/bin/tesseract /tmp/image.jpg /tmp/text"
+    speak(VOICE+"traitement.wav")
+    cmd = "/usr/bin/tesseract --dpi 300 -l fra /tmp/image.jpg /tmp/text"
     logger.info(cmd) 
     os.system(cmd)
     
@@ -184,8 +195,9 @@ try:
     #rt = RaspberryThread( function = repeatTTS ) # Repeat Speak text
     rt = RaspberryThread( function = stopTTS ) # Stop Speaking text
     
-    volume(VOLUME)
-    speak("OK, ready")
+    #volume(VOLUME)
+    speak(VOICE+"pret.wav")
+    #speak("pret pour une lecture")
     led(1)
     
     while True:
@@ -196,7 +208,8 @@ try:
             rt = RaspberryThread( function = stopTTS ) # Stop Speaking text
             led(1)
             time.sleep(0.5)  
-            speak("OK, ready")
+            #speak("je suis a nouveau pret.")
+            speak(VOICE+"pret2.wav")
         time.sleep(0.2)  
     
 except KeyboardInterrupt:
